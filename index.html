@@ -70,7 +70,12 @@
   #confirm h2{ color:var(--ok); margin:6px 0; }
   .zoom-card{ background:#fff; border:2px solid var(--teal-deep); border-radius:16px; padding:18px; margin:18px auto; max-width:480px; text-align:right; }
   .zoom-card a.zoom-btn{ display:block; text-align:center; margin-top:12px; background:#1a7a6b; color:#fff; text-decoration:none; padding:13px; border-radius:12px; font-weight:700; }
-  .ics-btn{ display:inline-block; margin-top:6px; background:var(--gold); color:#4a3608; text-decoration:none; padding:11px 18px; border-radius:11px; font-weight:700; }
+  .cal-title{ text-align:center; font-weight:700; color:var(--teal-deep); margin:16px 0 8px; }
+  .cal-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .cal-btn{ flex:1; min-width:140px; text-align:center; text-decoration:none; padding:11px 14px; border-radius:11px; font-weight:700; font-size:.95rem; }
+  .cal-google{ background:#4285F4; color:#fff; }
+  .cal-outlook{ background:#0F6CBD; color:#fff; }
+  .cal-ics{ background:var(--gold); color:#4a3608; }
   .note{ font-size:.9rem; color:var(--ink-soft); max-width:520px; margin:14px auto 0; }
   #errmsg{ display:none; background:#fdecea; border:1px solid #f5c2bd; color:#a12617; padding:10px 14px; border-radius:10px; margin-top:14px; text-align:center; font-weight:600; }
 </style>
@@ -175,11 +180,15 @@
       <div id="confirmLocal" style="margin-top:6px;color:#256b45;font-weight:700"></div>
       <div style="margin-top:6px">💻 <b>المنصّة:</b> Jitsi Meet</div>
       <a class="zoom-btn" id="zoomLink" href="https://meet.jit.si/PirateAcademyDigitalSafety2026" target="_blank" rel="noopener">🔗 الانضمام إلى اللقاء عبر Jitsi Meet</a>
-      <div style="text-align:center;margin-top:10px">
-        <a class="ics-btn" id="icsBtn" href="#">📥 إضافة الموعد إلى تقويمك</a>
+
+      <div class="cal-title">📅 أضف الموعد إلى تقويمك</div>
+      <div class="cal-row">
+        <a class="cal-btn cal-google" id="gcalBtn" href="#" target="_blank" rel="noopener">Google تقويم</a>
+        <a class="cal-btn cal-outlook" id="outlookBtn" href="#" target="_blank" rel="noopener">Outlook</a>
+        <a class="cal-btn cal-ics" id="icsBtn" href="#">Apple / آخر ملف</a>
       </div>
     </div>
-    <p class="note">💡 تم عرض الموعد أعلاه بحسب منطقتك الزمنية. ستصلك أيضاً رسالة تأكيد على بريدك الإلكتروني تحتوي على رابط اللقاء والموعد بتوقيتك المحلي. نراك قريباً! 🛡️</p>
+    <p class="note">💡 تم عرض الموعد أعلاه بحسب منطقتك الزمنية. اختر تقويمك من الأزرار أعلاه. ستصلك أيضاً رسالة على بريدك الإلكتروني تحتوي على رابط اللقاء والموعد بتوقيتك المحلي. نراك قريباً! 🛡️</p>
   </div>
 
   <footer>Pirate Academy — Cyber Seas of Knowledge · نبحر معاً في بحار الأمان الرقمي 🏴‍☠️</footer>
@@ -188,10 +197,11 @@
 <script>
   // ===== CONFIG =====
   var MEET_URL = "https://meet.jit.si/PirateAcademyDigitalSafety2026";                    // رابط اللقاء (Jitsi Meet)
-  var FORMSPREE_ENDPOINT = "https://formspree.io/f/mkjnvrla";     // رابط Formspree لإرسال الإيميل تلقائياً
+  var FORMSPREE_ENDPOINT = "https://formspree.io/f/mkjnvrla";     // رابط Formspree
   // Event start: 10 Sep 2026, 09:30 New Zealand time (NZST = UTC+12)
   var EVENT_START = new Date("2026-09-10T09:30:00+12:00");
   var EVENT_END   = new Date("2026-09-10T10:30:00+12:00");
+  var EVENT_TITLE = "لقاء أونلاين - الأمان الرقمي وصراع وقت الشاشة";
   // ==================
 
   function fmtLocal(d){
@@ -208,22 +218,43 @@
     "🌍 موعد اللقاء بتوقيتك المحلي (" + tz + "): " + fmtLocal(EVENT_START);
 
   function pad(n){ return (n<10?'0':'')+n; }
-  function icsDate(d){
+  function utcStamp(d){
     return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+
            pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z';
   }
-  function buildICS(){
+  var DESC = "لقاء أونلاين عبر Jitsi Meet حول الأمان الرقمي والمخاطر والحلول. رابط اللقاء: " + MEET_URL;
+
+  // Google Calendar link (opens directly in browser / app)
+  function googleCalUrl(){
+    return "https://calendar.google.com/calendar/render?action=TEMPLATE"+
+      "&text=" + encodeURIComponent(EVENT_TITLE) +
+      "&dates=" + utcStamp(EVENT_START) + "/" + utcStamp(EVENT_END) +
+      "&details=" + encodeURIComponent(DESC) +
+      "&location=" + encodeURIComponent("Jitsi Meet - " + MEET_URL);
+  }
+  // Outlook web link
+  function outlookUrl(){
+    return "https://outlook.live.com/calendar/0/action/compose?rru=addevent"+
+      "&subject=" + encodeURIComponent(EVENT_TITLE) +
+      "&startdt=" + EVENT_START.toISOString() +
+      "&enddt=" + EVENT_END.toISOString() +
+      "&body=" + encodeURIComponent(DESC) +
+      "&location=" + encodeURIComponent("Jitsi Meet - " + MEET_URL);
+  }
+  // Build ICS text (for Apple Calendar / others) as a downloadable Blob
+  function buildICSBlobUrl(){
     var body =
-"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Pirate Academy//Digital Safety//AR\nBEGIN:VEVENT\n"+
-"UID:pirate-academy-"+Date.now()+"@medchaar\n"+
-"DTSTAMP:"+icsDate(new Date())+"\n"+
-"DTSTART:"+icsDate(EVENT_START)+"\n"+
-"DTEND:"+icsDate(EVENT_END)+"\n"+
-"SUMMARY:لقاء أونلاين - الأمان الرقمي وصراع وقت الشاشة\n"+
-"DESCRIPTION:لقاء أونلاين عبر Jitsi Meet حول الأمان الرقمي والمخاطر والحلول.\\nرابط اللقاء: "+MEET_URL+"\n"+
-"LOCATION:Jitsi Meet - "+MEET_URL+"\n"+
-"URL:"+MEET_URL+"\nEND:VEVENT\nEND:VCALENDAR";
-    return "data:text/calendar;charset=utf-8," + encodeURIComponent(body);
+"BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pirate Academy//Digital Safety//AR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\n"+
+"UID:pirate-academy-"+Date.now()+"@medchaar\r\n"+
+"DTSTAMP:"+utcStamp(new Date())+"\r\n"+
+"DTSTART:"+utcStamp(EVENT_START)+"\r\n"+
+"DTEND:"+utcStamp(EVENT_END)+"\r\n"+
+"SUMMARY:"+EVENT_TITLE+"\r\n"+
+"DESCRIPTION:"+DESC+"\r\n"+
+"LOCATION:Jitsi Meet - "+MEET_URL+"\r\n"+
+"URL:"+MEET_URL+"\r\nEND:VEVENT\r\nEND:VCALENDAR";
+    var blob = new Blob([body], {type:'text/calendar;charset=utf-8'});
+    return URL.createObjectURL(blob);
   }
 
   function showConfirm(f){
@@ -232,8 +263,11 @@
     document.getElementById('confirmLocal').textContent =
       "🕘 الموعد بتوقيتك المحلي: " + fmtLocal(EVENT_START);
     document.getElementById('zoomLink').href = MEET_URL;
-    document.getElementById('icsBtn').href = buildICS();
-    document.getElementById('icsBtn').setAttribute('download','pirate-academy-event.ics');
+    document.getElementById('gcalBtn').href = googleCalUrl();
+    document.getElementById('outlookBtn').href = outlookUrl();
+    var ics = document.getElementById('icsBtn');
+    ics.href = buildICSBlobUrl();
+    ics.setAttribute('download','pirate-academy-event.ics');
     document.getElementById('attendForm').style.display = 'none';
     document.querySelector('.event-box').style.display = 'none';
     document.getElementById('confirm').style.display = 'block';
