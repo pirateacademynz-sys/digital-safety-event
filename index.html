@@ -62,6 +62,7 @@
   }
   .btn:hover{ background:#d3452f; }
   .btn:active{ transform:translateY(1px); }
+  .btn:disabled{ background:#b7b7b7; cursor:not-allowed; }
   footer{ text-align:center; padding:16px; font-size:.85rem; color:var(--ink-soft); background:var(--cream); border-top:1px solid var(--line); }
   /* Confirmation screen */
   #confirm{ display:none; padding:34px 26px; text-align:center; }
@@ -71,6 +72,7 @@
   .zoom-card a.zoom-btn{ display:block; text-align:center; margin-top:12px; background:#1a7a6b; color:#fff; text-decoration:none; padding:13px; border-radius:12px; font-weight:700; }
   .ics-btn{ display:inline-block; margin-top:6px; background:var(--gold); color:#4a3608; text-decoration:none; padding:11px 18px; border-radius:11px; font-weight:700; }
   .note{ font-size:.9rem; color:var(--ink-soft); max-width:520px; margin:14px auto 0; }
+  #errmsg{ display:none; background:#fdecea; border:1px solid #f5c2bd; color:#a12617; padding:10px 14px; border-radius:10px; margin-top:14px; text-align:center; font-weight:600; }
 </style>
 </head>
 <body>
@@ -158,7 +160,8 @@
     <label>هل لديك سؤال شخصي أو تعليق تريد طرحه في اللقاء؟</label>
     <textarea name="comment" placeholder="اكتب سؤالك أو ملاحظتك هنا…"></textarea>
 
-    <button type="submit" class="btn">✔ تأكيد الحضور</button>
+    <button type="submit" class="btn" id="submitBtn">✔ تأكيد الحضور</button>
+    <div id="errmsg">حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.</div>
     <p class="hint" style="text-align:center;margin-top:10px">بالضغط على «تأكيد الحضور» ستصلك رسالة تأكيد على بريدك الإلكتروني.</p>
   </form>
 
@@ -171,7 +174,7 @@
       <div>📅 <b>التاريخ:</b> الخميس 10 سبتمبر 2026</div>
       <div id="confirmLocal" style="margin-top:6px;color:#256b45;font-weight:700"></div>
       <div style="margin-top:6px">💻 <b>المنصّة:</b> Jitsi Meet</div>
-      <a class="zoom-btn" id="zoomLink" href="https://meet.jit.si/RemoteSocietiesPerformDesperately" target="_blank" rel="noopener">🔗 الانضمام إلى اللقاء عبر Jitsi Meet</a>
+      <a class="zoom-btn" id="zoomLink" href="https://meet.jit.si/PirateAcademyDigitalSafety2026" target="_blank" rel="noopener">🔗 الانضمام إلى اللقاء عبر Jitsi Meet</a>
       <div style="text-align:center;margin-top:10px">
         <a class="ics-btn" id="icsBtn" href="#">📥 إضافة الموعد إلى تقويمك</a>
       </div>
@@ -184,8 +187,8 @@
 
 <script>
   // ===== CONFIG =====
-  var MEET_URL = "https://meet.jit.si/RemoteSocietiesPerformDesperately";                   // رابط اللقاء (Jitsi Meet)
-  var FORMSPREE_ENDPOINT = "";                          // (اختياري) رابط Formspree لإرسال الإيميل تلقائياً
+  var MEET_URL = "https://meet.jit.si/PirateAcademyDigitalSafety2026";                    // رابط اللقاء (Jitsi Meet)
+  var FORMSPREE_ENDPOINT = "https://formspree.io/f/mkjnvrla";     // رابط Formspree لإرسال الإيميل تلقائياً
   // Event start: 10 Sep 2026, 09:30 New Zealand time (NZST = UTC+12)
   var EVENT_START = new Date("2026-09-10T09:30:00+12:00");
   var EVENT_END   = new Date("2026-09-10T10:30:00+12:00");
@@ -223,22 +226,7 @@
     return "data:text/calendar;charset=utf-8," + encodeURIComponent(body);
   }
 
-  document.getElementById('attendForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    var f = e.target;
-    if(!f.firstName.value.trim() || !f.lastName.value.trim() || !f.email.value.trim() || !f.location.value.trim()){
-      alert("الرجاء تعبئة الحقول الإلزامية (الاسم، اللقب، البريد، الموقع).");
-      return;
-    }
-
-    if(FORMSPREE_ENDPOINT){
-      var data = new FormData(f);
-      data.append("event_local_time", fmtLocal(EVENT_START));
-      data.append("timezone", tz);
-      data.append("meeting_link", MEET_URL);
-      fetch(FORMSPREE_ENDPOINT, { method:"POST", body:data, headers:{'Accept':'application/json'} });
-    }
-
+  function showConfirm(f){
     document.getElementById('confirmName').textContent =
       "شكراً لك يا " + f.firstName.value.trim() + " " + f.lastName.value.trim() + " 🌟";
     document.getElementById('confirmLocal').textContent =
@@ -246,11 +234,44 @@
     document.getElementById('zoomLink').href = MEET_URL;
     document.getElementById('icsBtn').href = buildICS();
     document.getElementById('icsBtn').setAttribute('download','pirate-academy-event.ics');
-
     document.getElementById('attendForm').style.display = 'none';
     document.querySelector('.event-box').style.display = 'none';
     document.getElementById('confirm').style.display = 'block';
     window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  document.getElementById('attendForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target;
+    var btn = document.getElementById('submitBtn');
+    var err = document.getElementById('errmsg');
+    err.style.display = 'none';
+
+    if(!f.firstName.value.trim() || !f.lastName.value.trim() || !f.email.value.trim() || !f.location.value.trim()){
+      alert("الرجاء تعبئة الحقول الإلزامية (الاسم، اللقب، البريد، الموقع).");
+      return;
+    }
+
+    var data = new FormData(f);
+    data.append("event_local_time", fmtLocal(EVENT_START));
+    data.append("timezone", tz);
+    data.append("meeting_link", MEET_URL);
+    data.append("_subject", "تسجيل جديد في لقاء الأمان الرقمي");
+
+    btn.disabled = true;
+    btn.textContent = "⏳ جارٍ الإرسال…";
+
+    fetch(FORMSPREE_ENDPOINT, {
+      method:"POST", body:data, headers:{'Accept':'application/json'}
+    }).then(function(res){
+      if(res.ok){ showConfirm(f); }
+      else { throw new Error("bad response"); }
+    }).catch(function(){
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = "✔ تأكيد الحضور";
+      setTimeout(function(){ showConfirm(f); }, 1200);
+    });
   });
 </script>
 </body>
