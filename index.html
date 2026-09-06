@@ -46,10 +46,12 @@
     font-family:inherit; font-size:1rem; background:#fff; color:var(--ink);
   }
   input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--teal-deep); box-shadow:0 0 0 3px rgba(92,154,154,.18); }
+  input.invalid{ border-color:var(--red); box-shadow:0 0 0 3px rgba(232,80,58,.15); }
   textarea{ min-height:110px; resize:vertical; }
   .row{ display:flex; gap:14px; flex-wrap:wrap; }
   .row > div{ flex:1; min-width:220px; }
   .hint{ font-size:.85rem; color:var(--ink-soft); margin:3px 0 0; }
+  .field-error{ display:none; color:var(--red); font-size:.82rem; margin:4px 0 0; font-weight:600; }
   .checks{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px 14px; margin-top:6px; }
   .check{ display:flex; align-items:flex-start; gap:10px; padding:9px 4px; border-bottom:1px solid #f0ead7; }
   .check:last-child{ border-bottom:none; }
@@ -72,10 +74,9 @@
   .zoom-card a.zoom-btn{ display:block; text-align:center; margin-top:12px; background:#1a7a6b; color:#fff; text-decoration:none; padding:13px; border-radius:12px; font-weight:700; }
   .cal-title{ text-align:center; font-weight:700; color:var(--teal-deep); margin:16px 0 8px; }
   .cal-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-  .cal-btn{ flex:1; min-width:140px; text-align:center; text-decoration:none; padding:11px 14px; border-radius:11px; font-weight:700; font-size:.95rem; }
+  .cal-btn{ flex:1; min-width:150px; text-align:center; text-decoration:none; padding:11px 14px; border-radius:11px; font-weight:700; font-size:.95rem; }
   .cal-google{ background:#4285F4; color:#fff; }
   .cal-outlook{ background:#0F6CBD; color:#fff; }
-  .cal-ics{ background:var(--gold); color:#4a3608; }
   .note{ font-size:.9rem; color:var(--ink-soft); max-width:520px; margin:14px auto 0; }
   #errmsg{ display:none; background:#fdecea; border:1px solid #f5c2bd; color:#a12617; padding:10px 14px; border-radius:10px; margin-top:14px; text-align:center; font-weight:600; }
 </style>
@@ -118,8 +119,9 @@
     </div>
 
     <label>البريد الإلكتروني <span class="req">*</span></label>
-    <input type="email" name="email" required placeholder="name@example.com">
-    <p class="hint">سنرسل لك رابط تأكيد الحضور ورابط اللقاء على هذا البريد، مع الوقت حسب منطقتك الزمنية.</p>
+    <input type="email" name="email" id="emailField" required placeholder="name@example.com" autocomplete="email">
+    <p class="field-error" id="emailError">⚠️ الرجاء إدخال بريد إلكتروني صحيح (مثال: name@example.com).</p>
+    <p class="hint">تأكد من صحة بريدك — سنستخدمه للتواصل معك بخصوص اللقاء.</p>
 
     <label>الموقع / العنوان (المدينة والدولة) <span class="req">*</span></label>
     <input type="text" name="location" required placeholder="مثال: أوكلاند، نيوزيلندا">
@@ -167,7 +169,7 @@
 
     <button type="submit" class="btn" id="submitBtn">✔ تأكيد الحضور</button>
     <div id="errmsg">حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.</div>
-    <p class="hint" style="text-align:center;margin-top:10px">بالضغط على «تأكيد الحضور» ستصلك رسالة تأكيد على بريدك الإلكتروني.</p>
+    <p class="hint" style="text-align:center;margin-top:10px">بالضغط على «تأكيد الحضور» سيظهر لك تأكيد فوري مع رابط اللقاء وأزرار إضافته إلى تقويمك.</p>
   </form>
 
   <!-- ===== Confirmation screen ===== -->
@@ -183,22 +185,20 @@
 
       <div class="cal-title">📅 أضف الموعد إلى تقويمك</div>
       <div class="cal-row">
-        <a class="cal-btn cal-google" id="gcalBtn" href="#" target="_blank" rel="noopener">Google تقويم</a>
+        <a class="cal-btn cal-google" id="gcalBtn" href="#" target="_blank" rel="noopener">تقويم Google</a>
         <a class="cal-btn cal-outlook" id="outlookBtn" href="#" target="_blank" rel="noopener">Outlook</a>
-        <a class="cal-btn cal-ics" id="icsBtn" href="#">Apple / آخر ملف</a>
       </div>
     </div>
-    <p class="note">💡 تم عرض الموعد أعلاه بحسب منطقتك الزمنية. اختر تقويمك من الأزرار أعلاه. ستصلك أيضاً رسالة على بريدك الإلكتروني تحتوي على رابط اللقاء والموعد بتوقيتك المحلي. نراك قريباً! 🛡️</p>
+    <p class="note">💡 تم عرض الموعد أعلاه بحسب منطقتك الزمنية. احفظ رابط اللقاء أو أضِفه إلى تقويمك من الأزرار أعلاه. نراك قريباً! 🛡️</p>
   </div>
 
-  <footer>Pirate Academy — Cyber Seas of Knowledge · نبحر معاً في بحار الأمان الرقمي 🏴‍☠️</footer>
+  <footer>Pirate Academy — Cyber Seas of Knowledge</footer>
 </div>
 
 <script>
   // ===== CONFIG =====
   var MEET_URL = "https://meet.jit.si/PirateAcademyDigitalSafety2026";                    // رابط اللقاء (Jitsi Meet)
   var FORMSPREE_ENDPOINT = "https://formspree.io/f/mkjnvrla";     // رابط Formspree
-  // Event start: 10 Sep 2026, 09:30 New Zealand time (NZST = UTC+12)
   var EVENT_START = new Date("2026-09-10T09:30:00+12:00");
   var EVENT_END   = new Date("2026-09-10T10:30:00+12:00");
   var EVENT_TITLE = "لقاء أونلاين - الأمان الرقمي وصراع وقت الشاشة";
@@ -224,7 +224,6 @@
   }
   var DESC = "لقاء أونلاين عبر Jitsi Meet حول الأمان الرقمي والمخاطر والحلول. رابط اللقاء: " + MEET_URL;
 
-  // Google Calendar link (opens directly in browser / app)
   function googleCalUrl(){
     return "https://calendar.google.com/calendar/render?action=TEMPLATE"+
       "&text=" + encodeURIComponent(EVENT_TITLE) +
@@ -232,7 +231,6 @@
       "&details=" + encodeURIComponent(DESC) +
       "&location=" + encodeURIComponent("Jitsi Meet - " + MEET_URL);
   }
-  // Outlook web link
   function outlookUrl(){
     return "https://outlook.live.com/calendar/0/action/compose?rru=addevent"+
       "&subject=" + encodeURIComponent(EVENT_TITLE) +
@@ -241,20 +239,10 @@
       "&body=" + encodeURIComponent(DESC) +
       "&location=" + encodeURIComponent("Jitsi Meet - " + MEET_URL);
   }
-  // Build ICS text (for Apple Calendar / others) as a downloadable Blob
-  function buildICSBlobUrl(){
-    var body =
-"BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pirate Academy//Digital Safety//AR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\n"+
-"UID:pirate-academy-"+Date.now()+"@medchaar\r\n"+
-"DTSTAMP:"+utcStamp(new Date())+"\r\n"+
-"DTSTART:"+utcStamp(EVENT_START)+"\r\n"+
-"DTEND:"+utcStamp(EVENT_END)+"\r\n"+
-"SUMMARY:"+EVENT_TITLE+"\r\n"+
-"DESCRIPTION:"+DESC+"\r\n"+
-"LOCATION:Jitsi Meet - "+MEET_URL+"\r\n"+
-"URL:"+MEET_URL+"\r\nEND:VEVENT\r\nEND:VCALENDAR";
-    var blob = new Blob([body], {type:'text/calendar;charset=utf-8'});
-    return URL.createObjectURL(blob);
+
+  // Robust email validation
+  function validEmail(v){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
   }
 
   function showConfirm(f){
@@ -265,14 +253,20 @@
     document.getElementById('zoomLink').href = MEET_URL;
     document.getElementById('gcalBtn').href = googleCalUrl();
     document.getElementById('outlookBtn').href = outlookUrl();
-    var ics = document.getElementById('icsBtn');
-    ics.href = buildICSBlobUrl();
-    ics.setAttribute('download','pirate-academy-event.ics');
     document.getElementById('attendForm').style.display = 'none';
     document.querySelector('.event-box').style.display = 'none';
     document.getElementById('confirm').style.display = 'block';
     window.scrollTo({top:0, behavior:'smooth'});
   }
+
+  // Live email check
+  var emailField = document.getElementById('emailField');
+  var emailError = document.getElementById('emailError');
+  emailField.addEventListener('blur', function(){
+    if(emailField.value.trim() && !validEmail(emailField.value)){
+      emailField.classList.add('invalid'); emailError.style.display='block';
+    } else { emailField.classList.remove('invalid'); emailError.style.display='none'; }
+  });
 
   document.getElementById('attendForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -281,8 +275,14 @@
     var err = document.getElementById('errmsg');
     err.style.display = 'none';
 
-    if(!f.firstName.value.trim() || !f.lastName.value.trim() || !f.email.value.trim() || !f.location.value.trim()){
-      alert("الرجاء تعبئة الحقول الإلزامية (الاسم، اللقب، البريد، الموقع).");
+    if(!f.firstName.value.trim() || !f.lastName.value.trim() || !f.location.value.trim()){
+      alert("الرجاء تعبئة الحقول الإلزامية (الاسم، اللقب، الموقع).");
+      return;
+    }
+    if(!validEmail(f.email.value)){
+      emailField.classList.add('invalid');
+      emailError.style.display='block';
+      emailField.focus();
       return;
     }
 
