@@ -66,6 +66,7 @@
   .btn:active{ transform:translateY(1px); }
   .btn:disabled{ background:#b7b7b7; cursor:not-allowed; }
   footer{ text-align:center; padding:16px; font-size:.85rem; color:var(--ink-soft); background:var(--cream); border-top:1px solid var(--line); }
+  footer a{ color:var(--teal-deep); font-weight:700; text-decoration:none; }
   /* Confirmation screen */
   #confirm{ display:none; padding:34px 26px; text-align:center; }
   #confirm .tick{ width:74px; height:74px; border-radius:50%; background:var(--lime); color:#fff; font-size:42px; line-height:74px; margin:0 auto 14px; }
@@ -77,6 +78,11 @@
   .cal-btn{ flex:1; min-width:150px; text-align:center; text-decoration:none; padding:11px 14px; border-radius:11px; font-weight:700; font-size:.95rem; }
   .cal-google{ background:#4285F4; color:#fff; }
   .cal-outlook{ background:#0F6CBD; color:#fff; }
+  .email-note{ background:#eef8ef; border:1px solid #cfead4; color:#256b45; border-radius:12px; padding:12px 14px; margin:16px auto 0; max-width:480px; font-size:.92rem; font-weight:600; }
+  .services{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px auto 0; max-width:480px; text-align:right; }
+  .services h3{ color:var(--teal-deep); margin:0 0 8px; font-size:1.05rem; }
+  .services p{ margin:0 0 10px; font-size:.94rem; color:var(--ink-soft); }
+  .services a.svc-btn{ display:block; text-align:center; background:var(--gold); color:#4a3608; text-decoration:none; padding:11px; border-radius:11px; font-weight:700; }
   .note{ font-size:.9rem; color:var(--ink-soft); max-width:520px; margin:14px auto 0; }
   #errmsg{ display:none; background:#fdecea; border:1px solid #f5c2bd; color:#a12617; padding:10px 14px; border-radius:10px; margin-top:14px; text-align:center; font-weight:600; }
 </style>
@@ -106,6 +112,9 @@
 
   <!-- ===== FORM ===== -->
   <form id="attendForm" novalidate>
+    <!-- Formspree autoresponse configuration -->
+    <input type="hidden" name="_subject" value="تأكيد تسجيلك في لقاء الأمان الرقمي 🛡️">
+
     <div class="section-title">📝 بياناتك</div>
     <div class="row">
       <div>
@@ -121,7 +130,7 @@
     <label>البريد الإلكتروني <span class="req">*</span></label>
     <input type="email" name="email" id="emailField" required placeholder="name@example.com" autocomplete="email">
     <p class="field-error" id="emailError">⚠️ الرجاء إدخال بريد إلكتروني صحيح (مثال: name@example.com).</p>
-    <p class="hint">تأكد من صحة بريدك — سنستخدمه للتواصل معك بخصوص اللقاء.</p>
+    <p class="hint">سنرسل تأكيد الحضور مع رابط اللقاء إلى هذا البريد. تأكد من صحته.</p>
 
     <label>الموقع / العنوان (المدينة والدولة) <span class="req">*</span></label>
     <input type="text" name="location" required placeholder="مثال: أوكلاند، نيوزيلندا">
@@ -169,7 +178,7 @@
 
     <button type="submit" class="btn" id="submitBtn">✔ تأكيد الحضور</button>
     <div id="errmsg">حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.</div>
-    <p class="hint" style="text-align:center;margin-top:10px">بالضغط على «تأكيد الحضور» سيظهر لك تأكيد فوري مع رابط اللقاء وأزرار إضافته إلى تقويمك.</p>
+    <p class="hint" style="text-align:center;margin-top:10px">بالضغط على «تأكيد الحضور» ستصلك رسالة تأكيد على بريدك الإلكتروني مع رابط اللقاء، ويظهر لك تأكيد فوري على الشاشة.</p>
   </form>
 
   <!-- ===== Confirmation screen ===== -->
@@ -189,16 +198,28 @@
         <a class="cal-btn cal-outlook" id="outlookBtn" href="#" target="_blank" rel="noopener">Outlook</a>
       </div>
     </div>
-    <p class="note">💡 تم عرض الموعد أعلاه بحسب منطقتك الزمنية. احفظ رابط اللقاء أو أضِفه إلى تقويمك من الأزرار أعلاه. نراك قريباً! 🛡️</p>
+
+    <div class="email-note">📩 أرسلنا رسالة تأكيد إلى بريدك الإلكتروني من <b>hello@pirateacademy.co.nz</b> تحتوي على رابط اللقاء والموعد بتوقيتك المحلي. (تحقق من مجلد الرسائل غير المرغوبة إن لم تجدها.)</div>
+
+    <!-- Paid services / workshops -->
+    <div class="services">
+      <h3>🎓 هل ترغب في المزيد؟ ورشاتنا ودوراتنا</h3>
+      <p>بعد اللقاء المجاني، نقدّم ورشات ودورات مدفوعة للعائلات والمجتمعات والمدارس (بالعربية والإنجليزية) حول الأمان الرقمي وصراع وقت الشاشة. احجز وادفع بأمان عبر الإنترنت.</p>
+      <a class="svc-btn" href="https://pirateacademy.co.nz" target="_blank" rel="noopener">🌐 تصفّح الورشات والحجز والدفع</a>
+    </div>
+
+    <p class="note">💡 لأي استفسار راسلنا على <a href="mailto:hello@pirateacademy.co.nz" style="color:var(--teal-deep);font-weight:700">hello@pirateacademy.co.nz</a>. نراك قريباً! 🛡️</p>
   </div>
 
-  <footer>Pirate Academy — Cyber Seas of Knowledge</footer>
+  <footer>Pirate Academy — Cyber Seas of Knowledge · <a href="mailto:hello@pirateacademy.co.nz">hello@pirateacademy.co.nz</a> · pirateacademy.co.nz</footer>
 </div>
 
 <script>
   // ===== CONFIG =====
   var MEET_URL = "https://meet.jit.si/PirateAcademyDigitalSafety2026";                    // رابط اللقاء (Jitsi Meet)
   var FORMSPREE_ENDPOINT = "https://formspree.io/f/mkjnvrla";     // رابط Formspree
+  var CONTACT_EMAIL = "hello@pirateacademy.co.nz";
+  var WEBSITE_URL = "https://pirateacademy.co.nz";              // رابط موقع الورشات والدفع
   var EVENT_START = new Date("2026-09-10T09:30:00+12:00");
   var EVENT_END   = new Date("2026-09-10T10:30:00+12:00");
   var EVENT_TITLE = "لقاء أونلاين - الأمان الرقمي وصراع وقت الشاشة";
@@ -240,7 +261,6 @@
       "&location=" + encodeURIComponent("Jitsi Meet - " + MEET_URL);
   }
 
-  // Robust email validation
   function validEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
   }
@@ -259,7 +279,6 @@
     window.scrollTo({top:0, behavior:'smooth'});
   }
 
-  // Live email check
   var emailField = document.getElementById('emailField');
   var emailError = document.getElementById('emailError');
   emailField.addEventListener('blur', function(){
@@ -290,7 +309,6 @@
     data.append("event_local_time", fmtLocal(EVENT_START));
     data.append("timezone", tz);
     data.append("meeting_link", MEET_URL);
-    data.append("_subject", "تسجيل جديد في لقاء الأمان الرقمي");
 
     btn.disabled = true;
     btn.textContent = "⏳ جارٍ الإرسال…";
